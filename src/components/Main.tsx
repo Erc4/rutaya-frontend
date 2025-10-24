@@ -1,4 +1,6 @@
+// src/components/Main.tsx
 import { RoutesTrucks } from "./RoutesTrucks";
+import { UnitsManagement } from "./UnitsManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 export const Main = () => {
@@ -16,7 +18,7 @@ export const Main = () => {
               <RoutesTrucks />
             </TabsContent>
             <TabsContent value="units">
-              Make changes to your units here.
+              <UnitsManagement />
             </TabsContent>
             <TabsContent value="personal">
               Make changes to your personal here.
