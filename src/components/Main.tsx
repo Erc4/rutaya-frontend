@@ -1,6 +1,7 @@
 // src/components/Main.tsx
 import { RoutesTrucks } from "./RoutesTrucks";
 import { UnitsManagement } from "./UnitsManagement";
+import { DriversManagement } from "./DriversManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 export const Main = () => {
@@ -21,7 +22,7 @@ export const Main = () => {
               <UnitsManagement />
             </TabsContent>
             <TabsContent value="personal">
-              Make changes to your personal here.
+              <DriversManagement />
             </TabsContent>
           </div>
         </Tabs>
