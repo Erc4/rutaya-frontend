@@ -1,5 +1,5 @@
 // src/services/routesService.ts
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp, query, orderBy, getDocs, deleteDoc, updateDoc, doc} from 'firebase/firestore';
 import { db } from '@/lib/firebase.config';
 import type { Coordinate } from './mapMatchingService';
 
@@ -21,6 +21,11 @@ export interface CreateRouteData {
   distance?: number;
   duration?: number;
   profile?: string;
+}
+
+// Interfaz para las rutas con su ID cuando las leemos de Firebase
+export interface RouteWithId extends RouteData {
+  id: string;
 }
 
 /**
@@ -214,4 +219,226 @@ export const formatDuration = (seconds: number): string => {
     return `${minutes}m ${secs}s`;
   }
   return `${secs}s`;
+};
+
+/**
+ * Obtiene todas las rutas desde Firebase Firestore
+ * 
+ * @returns Array de rutas con sus IDs ordenadas por fecha de creación (más recientes primero)
+ */
+export const getAllRoutes = async (): Promise<RouteWithId[]> => {
+  try {
+    // Referencia a la colección 'rutas'
+    const routesCollection = collection(db, 'rutas');
+    
+    // Crear query para ordenar por fecha de creación descendente
+    const q = query(routesCollection, orderBy('createdAt', 'desc'));
+    
+    // Obtener todos los documentos
+    const querySnapshot = await getDocs(q);
+    
+    // Mapear los documentos a nuestro formato RouteWithId
+    const routes: RouteWithId[] = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data() as RouteData
+    }));
+    
+    console.log('✅ Rutas obtenidas:', routes.length);
+    
+    return routes;
+  } catch (error) {
+    console.error('❌ Error al obtener rutas:', error);
+    
+    // Manejo de errores específicos
+    if (error instanceof Error) {
+      if (error.message.includes('permission-denied')) {
+        throw new Error('Permisos denegados para leer rutas. Verifica las reglas de Firestore.');
+      }
+      if (error.message.includes('network')) {
+        throw new Error('Error de conexión. Verifica tu internet.');
+      }
+    }
+    
+    throw new Error('Error al obtener las rutas. Por favor intenta de nuevo.');
+  }
+};
+
+/**
+ * Elimina una ruta de Firebase Firestore
+ * 
+ * @param routeId - ID del documento de la ruta a eliminar
+ * @returns Resultado de la operación
+ */
+export const deleteRoute = async (routeId: string) => {
+  try {
+    // Referencia al documento específico
+    const routeDoc = doc(db, 'rutas', routeId);
+    
+    // Eliminar el documento
+    await deleteDoc(routeDoc);
+    
+    console.log('✅ Ruta eliminada:', routeId);
+    
+    return {
+      success: true,
+      message: 'Ruta eliminada exitosamente'
+    };
+  } catch (error) {
+    console.error('❌ Error al eliminar ruta:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('permission-denied')) {
+        return {
+          success: false,
+          message: 'Permisos denegados para eliminar rutas. Verifica las reglas de Firestore.'
+        };
+      }
+      if (error.message.includes('network')) {
+        return {
+          success: false,
+          message: 'Error de conexión. Verifica tu internet.'
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      message: 'Error al eliminar la ruta. Por favor intenta de nuevo.'
+    };
+  }
+};
+
+/**
+ * Actualiza una ruta existente en Firebase Firestore
+ * 
+ * @param routeId - ID del documento de la ruta a actualizar
+ * @param updateData - Datos a actualizar (nombre, descripcion, waypoints)
+ * @returns Resultado de la operación
+ */
+export const updateRoute = async (
+  routeId: string, 
+  updateData: {
+    nombre?: string;
+    descripcion?: string;
+    coordinates?: Coordinate[];
+  }
+) => {
+  try {
+    // Referencia al documento específico
+    const routeDoc = doc(db, 'rutas', routeId);
+    
+    // Preparar datos para actualizar
+    const dataToUpdate: Partial<RouteData> = {};
+    
+    if (updateData.nombre !== undefined) {
+      dataToUpdate.nombre = updateData.nombre;
+    }
+    
+    if (updateData.descripcion !== undefined) {
+      dataToUpdate.descripcion = updateData.descripcion;
+    }
+    
+    if (updateData.coordinates !== undefined) {
+      // Validar que haya coordenadas
+      if (updateData.coordinates.length < 2) {
+        return {
+          success: false,
+          message: 'La ruta debe tener al menos 2 coordenadas'
+        };
+      }
+      
+      // Validar formato y rangos
+      if (!validateCoordinates(updateData.coordinates)) {
+        return {
+          success: false,
+          message: 'Las coordenadas están fuera de los rangos válidos'
+        };
+      }
+      
+      // Convertir coordenadas a formato string
+      dataToUpdate.waypoints = convertCoordinatesToWaypointsString(updateData.coordinates);
+    }
+    
+    // Actualizar el documento
+    await updateDoc(routeDoc, dataToUpdate);
+    
+    console.log('✅ Ruta actualizada:', routeId);
+    
+    return {
+      success: true,
+      message: 'Ruta actualizada exitosamente',
+      data: dataToUpdate
+    };
+  } catch (error) {
+    console.error('❌ Error al actualizar ruta:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('permission-denied')) {
+        return {
+          success: false,
+          message: 'Permisos denegados para actualizar rutas. Verifica las reglas de Firestore.'
+        };
+      }
+      if (error.message.includes('network')) {
+        return {
+          success: false,
+          message: 'Error de conexión. Verifica tu internet.'
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      message: 'Error al actualizar la ruta. Por favor intenta de nuevo.'
+    };
+  }
+};
+
+/**
+ * Cambia el estado activo/inactivo de una ruta
+ * 
+ * @param routeId - ID del documento de la ruta
+ * @param activo - Nuevo estado (1 = activo, 0 = inactivo)
+ * @returns Resultado de la operación
+ */
+export const toggleRouteActive = async (routeId: string, activo: number) => {
+  try {
+    // Referencia al documento específico
+    const routeDoc = doc(db, 'rutas', routeId);
+    
+    // Actualizar solo el campo activo
+    await updateDoc(routeDoc, {
+      activo: activo
+    });
+    
+    console.log('✅ Estado de ruta actualizado:', routeId, '- Activo:', activo);
+    
+    return {
+      success: true,
+      message: `Ruta marcada como ${activo === 1 ? 'activa' : 'inactiva'}`,
+      activo
+    };
+  } catch (error) {
+    console.error('❌ Error al cambiar estado de ruta:', error);
+    
+    if (error instanceof Error) {
+      if (error.message.includes('permission-denied')) {
+        return {
+          success: false,
+          message: 'Permisos denegados. Verifica las reglas de Firestore.'
+        };
+      }
+      if (error.message.includes('network')) {
+        return {
+          success: false,
+          message: 'Error de conexión. Verifica tu internet.'
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      message: 'Error al cambiar el estado de la ruta.'
+    };
+  }
 };

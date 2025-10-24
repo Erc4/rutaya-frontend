@@ -2,6 +2,9 @@
 import './App.css'
 import { Main } from './components/Main'
 import { Navbar } from './components/Navbar'
+import { Toaster } from "./components/ui/toaster";
+
+
 
 function App() {
 
@@ -9,6 +12,7 @@ function App() {
     <div>
       <Navbar />
       <Main />
+      <Toaster />
     </div>
   )
 }
