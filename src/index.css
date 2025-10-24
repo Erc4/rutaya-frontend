@@ -40,6 +40,40 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
+/* Asegurar que los controles de Mapbox Draw sean visibles */
+.mapboxgl-ctrl-group {
+  background: white !important;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.1) !important;
+}
+
+.mapboxgl-ctrl-group button {
+  width: 30px !important;
+  height: 30px !important;
+  display: block !important;
+  padding: 0 !important;
+  outline: none !important;
+  border: 0 !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+  cursor: pointer !important;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: rgba(0,0,0,.05) !important;
+}
+
+.mapbox-gl-draw_ctrl-draw-btn {
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}
+
+.mapbox-gl-draw_line {
+  background-image: url('data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%3E%3Cpath%20d%3D%22M3%2010h14%22%20stroke%3D%22%23404040%22%20stroke-width%3D%222%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E') !important;
+}
+
+.mapbox-gl-draw_trash {
+  background-image: url('data:image/svg+xml;charset=utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%3E%3Cpath%20d%3D%22M6%207v10h8V7H6zm2%202h4v6H8V9z%22%20fill%3D%22%23404040%22%2F%3E%3Cpath%20d%3D%22M5%205h10v2H5z%22%20fill%3D%22%23404040%22%2F%3E%3C%2Fsvg%3E') !important;
+}
 
 :root {
   --radius: 0.625rem;
