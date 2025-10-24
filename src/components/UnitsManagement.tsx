@@ -78,10 +78,6 @@ export const UnitsManagement = () => {
   };
 
   // Handler para cerrar modal de editar
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedUnit(null);
-  };
 
   // Handler para cuando se actualiza una unidad
   const handleEditSuccess = () => {

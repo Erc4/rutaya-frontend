@@ -93,11 +93,6 @@ export const RoutesTrucks = () => {
   };
 
   // Handler para cerrar modal de editar
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedRoute(null);
-  };
-
   // Handler para cuando se actualiza una ruta
   const handleEditSuccess = () => {
     loadRoutes();

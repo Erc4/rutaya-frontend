@@ -79,10 +79,7 @@ export const DriversManagement = () => {
   };
 
   // Handler para cerrar modal de editar
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setSelectedDriver(null);
-  };
+
 
   // Handler para cuando se actualiza un chofer
   const handleEditSuccess = () => {
@@ -287,9 +284,12 @@ export const DriversManagement = () => {
       <AddDriverModal open={isAddModalOpen} onOpenChange={handleCloseAddModal} />
 
       {/* Modal para editar choferes */}
-      <EditDriverModal 
+     <EditDriverModal 
         open={isEditModalOpen} 
-        onOpenChange={setIsEditModalOpen}
+        onOpenChange={(open) => {
+          setIsEditModalOpen(open);
+          if (!open) setSelectedDriver(null);
+        }}
         driver={selectedDriver}
         onSuccess={handleEditSuccess}
       />

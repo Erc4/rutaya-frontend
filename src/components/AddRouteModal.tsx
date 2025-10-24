@@ -22,7 +22,6 @@ export const AddRouteModal = ({ open, onOpenChange }: AddRouteModalProps) => {
   const [waypoints, setWaypoints] = useState('');
   const [profile, setProfile] = useState<'driving' | 'walking' | 'cycling'>('driving');
   
-  const [drawnCoordinates, setDrawnCoordinates] = useState<Coordinate[]>([]);
   const [matchedRoute, setMatchedRoute] = useState<MatchedRoute | null>(null);
   
   const [processState, setProcessState] = useState<ProcessState>('idle');
@@ -33,14 +32,12 @@ export const AddRouteModal = ({ open, onOpenChange }: AddRouteModalProps) => {
     setDescripcion('');
     setWaypoints('');
     setProfile('driving');
-    setDrawnCoordinates([]);
     setMatchedRoute(null);
     setError('');
     setProcessState('idle');
   }, []);
 
   const handleRouteDrawn = useCallback(async (coordinates: Coordinate[]) => {
-    setDrawnCoordinates(coordinates);
     setError('');
     setProcessState('matching');
     

@@ -1,6 +1,6 @@
 // src/components/UnitCard.tsx
 import { type UnitWithId, formatCapacity } from '@/services/unitsService';
-import { Truck, Calendar, Hash, Users, Weight, Pencil, Trash2, Power } from 'lucide-react';
+import { Truck, Calendar, Hash, Users, Pencil, Trash2, Power } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface UnitCardProps {
